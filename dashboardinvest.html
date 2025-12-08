@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Investment Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="dashboardinvest.css">
+
+</head>
+
+<body class="min-h-screen text-gray-800">
+
+    <!-- Logout Icon -->
+    <i class="fas fa-sign-out-alt logout-icon" title="Sign Out" onclick="confirmLogout()"></i>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="mb-6 fade-in">
+            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">Hello, <span class="text-blue-600"
+                    id="userName">User</span> 👋</h2>
+            <p class="text-sm text-gray-500 mt-1">User ID: <span class="font-medium text-indigo-600"
+                    id="userId">Loading...</span></p>
+        </div>
+
+        <!-- Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-10">
+            <div class="bg-white card p-5 rounded-xl shadow-lg border-t-4 border-blue-500 fade-in">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-piggy-bank text-blue-500 text-xl"></i>
+                    <div>
+                        <h5 class="text-sm text-gray-500">Daily Asset</h5>
+                        <p class="text-xl font-semibold text-blue-600 mt-1" id="dailyAsset">$0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white card p-5 rounded-xl shadow-lg border-t-4 border-green-500 fade-in">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-coins text-green-500 text-xl"></i>
+                    <div>
+                        <h5 class="text-sm text-gray-500">Trading Bonus</h5>
+                        <p class="text-xl font-semibold text-green-600 mt-1" id="tradingBonus">$0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white card p-5 rounded-xl shadow-lg border-t-4 border-purple-500 fade-in">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-user-friends text-purple-500 text-xl"></i>
+                    <div>
+                        <h5 class="text-sm text-gray-500">Referral Bonus</h5>
+                        <p class="text-xl font-semibold text-purple-600 mt-1" id="referralBonus">$0</p>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white card p-5 rounded-xl shadow-lg border-t-4 border-orange-500 fade-in">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-wallet text-orange-500 text-xl"></i>
+                    <div>
+                        <h5 class="text-sm text-gray-500">Total Asset</h5>
+                        <p class="text-xl font-semibold text-orange-600 mt-1" id="totalAsset">$0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Signal Chart -->
+        <div class="bg-white rounded-2xl shadow-xl p-6 mb-10 fade-in overflow-x-auto">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4"><i class="fas fa-chart-line text-blue-500"></i> Signal
+                Overview</h4>
+            <canvas id="signalChart" height="100"></canvas>
+        </div>
+
+        <!-- History -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="bg-white p-6 rounded-2xl shadow-lg fade-in">
+                <h4 class="text-lg font-semibold text-gray-700 mb-3 border-b pb-2"><i
+                        class="fas fa-arrow-circle-down text-green-500"></i> Credit History</h4>
+                <ul class="text-sm space-y-3 text-gray-600" id="creditHistoryList">
+                    <li>Loading...</li>
+                </ul>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-lg fade-in">
+                <h4 class="text-lg font-semibold text-gray-700 mb-3 border-b pb-2"><i
+                        class="fas fa-arrow-circle-up text-blue-500"></i> Debit History</h4>
+                <ul class="text-sm space-y-3 text-gray-600" id="depositHistoryList">
+                    <li>Loading...</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Add the Withdraw Button -->
+    <div class="flex justify-center mt-6">
+        <button class="btn btn-primary" onclick="openMainWithdrawModal()">Request Withdrawal</button>
+    </div>
+
+
+    <!-- Chat Button -->
+    <i class="fas fa-comment-dots chat-icon" title="Chat with Admin" onclick="openChatModal()"></i>
+
+    <!-- Chat Modal -->
+    <div id="chatModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeChatModal()">×</span>
+            <h2>Chat with Admin</h2>
+            <div id="userChatMessages">
+                <!-- Messages will be loaded here -->
+            </div>
+            <div class="message-input-area">
+                <input type="text" id="userChatInput" class="form-control" placeholder="Type a message...">
+                <button class="btn btn-primary" onclick="sendUserMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Withdrawal Main Modal -->
+    <div id="mainWithdrawModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeMainWithdrawModal()">×</span>
+            <h2>Select Withdrawal Method</h2>
+            <div class="mt-4 space-y-4">
+                <button class="btn btn-primary w-full" onclick="showBankForm()">Withdraw to Bank Account</button>
+                <button class="btn btn-primary w-full" onclick="showWalletForm()">Withdraw to Personal Wallet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bank Withdrawal Form -->
+    <div id="bankFormModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeBankForm()">×</span>
+            <h2>Bank Account Withdrawal</h2>
+            <div class="form-group mt-4">
+                <label for="bankAccountNumber">Bank Account Number:</label>
+                <input type="text" id="bankAccountNumber" class="form-control" placeholder="Bank account number" />
+            </div>
+            <div class="form-group mt-2">
+                <label for="bankName">Bank Name:</label>
+                <input type="text" id="bankName" class="form-control" placeholder="Bank name" />
+            </div>
+            <div class="form-group mt-2">
+                <label for="bankAmount">Amount:</label>
+                <input type="number" id="bankAmount" class="form-control" placeholder="Amount" min="0.01" step="0.01" />
+            </div>
+            <div class="form-group mt-2">
+                <label for="bankPin">PIN:</label>
+                <input type="password" id="bankPin" class="form-control" placeholder="PIN" />
+            </div>
+            <button class="btn btn-primary w-full mt-4" onclick="submitBankWithdrawal()">Withdraw</button>
+            <!-- Added status message element here -->
+            <p id="bankWithdrawalStatus" class="mt-3 text-center text-gray-600"></p>
+        </div>
+    </div>
+
+    <!-- Wallet Withdrawal Form -->
+    <div id="walletFormModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeWalletForm()">×</span>
+            <h2>Wallet Withdrawal</h2>
+            <div class="form-group mt-4">
+                <label for="walletName">Wallet Name (e.g., TrustWallet):</label>
+                <input type="text" id="walletName" class="form-control" placeholder="Wallet name" />
+            </div>
+            <div class="form-group mt-2">
+                <label for="walletAddress">Wallet Address:</label>
+                <input type="text" id="walletAddress" class="form-control" placeholder="Wallet address" />
+            </div>
+            <div class="form-group mt-2">
+                <label for="walletAmount">Amount:</label>
+                <input type="number" id="walletAmount" class="form-control" placeholder="Amount" min="0.01"
+                    step="0.01" />
+            </div>
+            <div class="form-group mt-2">
+                <label for="walletPin">PIN:</label>
+                <input type="password" id="walletPin" class="form-control" placeholder="PIN" />
+            </div>
+            <button class="btn btn-primary w-full mt-4" onclick="submitWalletWithdrawal()">Withdraw</button>
+            <!-- Added status message element here -->
+            <p id="walletWithdrawalStatus" class="mt-3 text-center text-gray-600"></p>
+        </div>
+    </div>
+
+    <!-- Pending Status Modal (New) -->
+    <div id="pendingStatusModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closePendingStatusModal()">×</span>
+            <h2>Withdrawal Status</h2>
+            <div class="pending-status-box">
+                <p>Your withdrawal request has been submitted and is pending admin approval.</p>
+                <p>Please check your Debit History for updates.</p>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Firebase Config and Data Logic -->
+    <script>
+       const firebaseConfig = {
+        apiKey: "AIzaSyDnkCQOgU1FGZL3rjck9YI7wxdltHxI_L0",
+        authDomain: "strekwell.firebaseapp.com",
+        projectId: "strekwell",
+        storageBucket: "strekwell.firebasestorage.app",
+        messagingSenderId: "413018374090",
+        appId: "1:413018374090:web:c3fa0e5577a20ac04ed933"
+    };
+
+    // Initialize Firebase (compat version)
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+        let currentUserUid = null;
+        let userChatListener = null; // Keep track of the chat listener
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (user) {
+                currentUserUid = user.uid;
+                firebase.database().ref("investors/" + currentUserUid).on("value", snapshot => {
+                    const data = snapshot.val();
+                    if (data) {
+                        document.getElementById("userName").textContent = data.fullname || "User";
+                        document.getElementById("userId").textContent = data.userId || "N/A";
+                        document.getElementById("dailyAsset").textContent = `$${data.dailyAsset || 0}`;
+                        document.getElementById("tradingBonus").textContent = `$${data.tradingBonus || 0}`;
+                        document.getElementById("referralBonus").textContent = `$${data.referralBonus || 0}`;
+                        document.getElementById("totalAsset").textContent = `$${data.totalAsset || 0}`;
+
+                        displayHistory(data.creditHistory, "creditHistoryList", "Credit");
+                        displayHistory(data.depositHistory, "depositHistoryList", "Debit");
+                    }
+                });
+            } else {
+                window.location.href = "investlogin.html";
+            }
+        });
+
+        function displayHistory(historyData, elementId, type) {
+            const listElement = document.getElementById(elementId);
+            listElement.innerHTML = "";
+            if (
+                !historyData ||
+                (Array.isArray(historyData) && historyData.length === 0) ||
+                (typeof historyData === "object" && Object.keys(historyData).length === 0)
+            ) {
+                const li = document.createElement("li");
+                li.textContent = `No ${type} history available.`;
+                listElement.appendChild(li);
+                return;
+            }
+            const historyArray = Array.isArray(historyData)
+                ? historyData
+                : Object.values(historyData);
+            historyArray.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+            historyArray.forEach((item) => {
+                const li = document.createElement("li");
+                const amount = item.amount !== undefined ? item.amount : item;
+                const timestamp = item.timestamp
+                    ? new Date(item.timestamp).toLocaleString()
+                    : "N/A";
+                const fundedBy = item.fundedBy || "";
+                const assetFunded = item.assetFunded ? ` (${item.assetFunded})` : "";
+                const status = item.status ? ` (${item.status})` : "";
+                const typeStr = item.type || "";
+                let textContent = "";
+                if (typeStr === "Withdrawal") {
+                    // Display account number or wallet name/address based on what's available
+                    let destination = '';
+                    if (item.method === 'Bank') {
+                        destination = item.accountNumber || 'N/A';
+                    } else if (item.method === 'Wallet') {
+                        destination = item.walletName || '';
+                        if (item.walletAddress) {
+                            destination += ` (${item.walletAddress})`;
+                        } else if (destination === '') {
+                            destination = 'N/A';
+                        }
+                    } else {
+                        destination = item.accountNumber || item.walletName || 'N/A'; // Fallback
+                    }
+                    textContent = `- $${amount} to ${destination} ${status} at ${timestamp}`;
+                } else if (type === "Credit") {
+                    textContent = `+ $${amount} ${assetFunded} ${fundedBy ? `by ${fundedBy}` : ""} at ${timestamp}`;
+                } else {
+                    textContent = `- $${amount} at ${timestamp}`;
+                }
+                li.textContent = textContent;
+                listElement.appendChild(li);
+            });
+        }
+
+        function confirmLogout() {
+            if (confirm("Are you sure you want to sign out?")) {
+                firebase.auth().signOut().then(() => {
+                    window.location.href = "investlogin.html";
+                });
+            }
+        }
+
+        // Chat modal functions (FIXED .off() check)
+        function openChatModal() {
+            if (!currentUserUid) {
+                alert("User not logged in. Cannot open chat.");
+                return;
+            }
+            document.getElementById("chatModal").style.display = "flex";
+            loadUserChatMessages(currentUserUid);
+            const chatInput = document.getElementById("userChatInput");
+            // Remove existing listener before adding a new one
+            if (chatInput._keypressListener) {
+                chatInput.removeEventListener("keypress", chatInput._keypressListener);
+            }
+            chatInput._keypressListener = function (event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    sendUserMessage();
+                }
+            };
+            chatInput.addEventListener("keypress", chatInput._keypressListener);
+            setTimeout(() => {
+                const messagesDiv = document.getElementById("userChatMessages");
+                messagesDiv.scrollTop = messagesDiv.scrollHeight;
+            }, 100);
+        }
+
+        function closeChatModal() {
+            document.getElementById("chatModal").style.display = "none";
+            document.getElementById("userChatMessages").innerHTML = "";
+            document.getElementById("userChatInput").value = "";
+            // Check if userChatListener exists before calling .off()
+            if (userChatListener) {
+                // In Firebase compat library, ref.on returns an unsubscribe function.
+                // In older versions or different contexts, .off() might be used.
+                // We'll try calling it as a function first, which is the modern pattern.
+                // If that fails, we can add a fallback for older versions if needed.
+                try {
+                    userChatListener(); // Attempt to call as unsubscribe function
+                } catch (e) {
+                    console.warn("Could not unsubscribe chat listener using function call:", e);
+                    // If the above fails, you might need to use the old .off() pattern
+                    // if you were using different Firebase versions/methods.
+                    // For the compat library using on('value', ...), detaching the listener
+                    // might look like this: firebase.database().ref("chats/" + currentUserUid).off('value', yourCallback);
+                    // However, since we are replacing the listener each time in openChatModal,
+                    // simply setting userChatListener = null might be sufficient to prevent
+                    // subsequent calls to .off() on a null value, although it doesn't explicitly detach.
+                }
+                userChatListener = null; // Clear the reference regardless
+            }
+            const chatInput = document.getElementById("userChatInput");
+            if (chatInput._keypressListener) {
+                chatInput.removeEventListener("keypress", chatInput._keypressListener);
+                chatInput._keypressListener = null;
+            }
+        }
+
+        // FIX: Load full chat history using 'value' listener and store unsubscribe function
+        function loadUserChatMessages(uid) {
+            const chatMessagesDiv = document.getElementById("userChatMessages");
+            chatMessagesDiv.innerHTML = "";
+            const chatRef = firebase.database().ref("chats/" + uid).orderByChild("timestamp");
+
+            // Detach any existing listener before attaching a new one
+            if (userChatListener) {
+                try {
+                    userChatListener(); // Attempt to call as unsubscribe function
+                } catch (e) {
+                    console.warn("Could not unsubscribe existing chat listener:", e);
+                }
+                userChatListener = null;
+            }
+
+            // Use a 'value' listener and store the unsubscribe function
+            userChatListener = chatRef.on(
+                "value",
+                (snapshot) => {
+                    chatMessagesDiv.innerHTML = ""; // Clear before displaying all messages again
+                    snapshot.forEach(childSnapshot => {
+                        const message = childSnapshot.val();
+                        displayUserMessage(message);
+                    });
+                    // Scroll to the bottom after loading all messages
+                    chatMessagesDiv.scrollTop = chatMessagesDiv.scrollHeight;
+                },
+                (error) => {
+                    console.error("Error loading chat messages:", error);
+                }
+            );
+            // In Firebase compat library (v8), ref.on returns a function that you call to unsubscribe.
+            // This is the pattern being used now.
+        }
+
+
+        function displayUserMessage(message) {
+            const chatMessagesDiv = document.getElementById("userChatMessages");
+            const msgDiv = document.createElement("div");
+            msgDiv.className = "message " + (message.sender !== "Admin" ? "user" : "admin");
+            const senderDiv = document.createElement("div");
+            senderDiv.className = "message-sender";
+            senderDiv.textContent = message.sender + ":";
+            const textP = document.createElement("p");
+            textP.className = "message-text";
+            textP.textContent = message.text;
+            msgDiv.appendChild(senderDiv);
+            msgDiv.appendChild(textP);
+            chatMessagesDiv.appendChild(msgDiv);
+        }
+
+        function sendUserMessage() {
+            if (!currentUserUid) {
+                alert("User not logged in. Cannot send message.");
+                return;
+            }
+            const input = document.getElementById("userChatInput");
+            const text = input.value.trim();
+            if (text === "") return;
+            const ref = firebase.database().ref("chats/" + currentUserUid);
+            ref
+                .push({ text: text, sender: document.getElementById("userName").textContent, timestamp: firebase.database.ServerValue.TIMESTAMP })
+                .then(() => {
+                    input.value = "";
+                });
+        }
+
+        // --- Main withdrawal flow ---
+        function openMainWithdrawModal() {
+            if (!currentUserUid) {
+                alert("User not logged in");
+                return;
+            }
+            document.getElementById("mainWithdrawModal").style.display = "flex";
+        }
+
+        function closeMainWithdrawModal() {
+            document.getElementById("mainWithdrawModal").style.display = "none";
+        }
+
+        function showBankForm() {
+            closeMainWithdrawModal();
+            // Clear previous inputs and status message
+            document.getElementById("bankAccountNumber").value = '';
+            document.getElementById("bankName").value = '';
+            document.getElementById("bankAmount").value = '';
+            document.getElementById("bankPin").value = '';
+            const statusMsg = document.getElementById("bankWithdrawalStatus");
+            if (statusMsg) { // Check if element exists
+                statusMsg.textContent = '';
+            }
+            document.getElementById("bankFormModal").style.display = "flex";
+        }
+
+        function showWalletForm() {
+            closeMainWithdrawModal();
+            // Clear previous inputs and status message
+            document.getElementById("walletName").value = '';
+            document.getElementById("walletAddress").value = ''; // Clear wallet address
+            document.getElementById("walletAmount").value = '';
+            document.getElementById("walletPin").value = '';
+            const statusMsg = document.getElementById("walletWithdrawalStatus");
+            if (statusMsg) { // Check if element exists
+                statusMsg.textContent = '';
+            }
+            document.getElementById("walletFormModal").style.display = "flex";
+        }
+
+        function closeBankForm() {
+            document.getElementById("bankFormModal").style.display = "none";
+            const statusMsg = document.getElementById("bankWithdrawalStatus");
+            if (statusMsg) {
+                statusMsg.textContent = ''; // Clear message on close
+            }
+        }
+
+        function closeWalletForm() {
+            document.getElementById("walletFormModal").style.display = "none";
+            const statusMsg = document.getElementById("walletWithdrawalStatus");
+            if (statusMsg) {
+                statusMsg.textContent = ''; // Clear message on close
+            }
+        }
+
+        // Function to open the pending status modal
+        function openPendingStatusModal() {
+            document.getElementById('pendingStatusModal').style.display = 'flex';
+            // Show the pending status box content
+            const pendingBox = document.querySelector('#pendingStatusModal .pending-status-box');
+            if (pendingBox) {
+                pendingBox.style.display = 'block';
+            }
+        }
+
+        // Function to close the pending status modal
+        function closePendingStatusModal() {
+            document.getElementById('pendingStatusModal').style.display = 'none';
+            // Hide the pending status box content
+            const pendingBox = document.querySelector('#pendingStatusModal .pending-status-box');
+            if (pendingBox) {
+                pendingBox.style.display = 'none';
+            }
+        }
+
+
+        function submitBankWithdrawal() {
+            const accNum = document.getElementById("bankAccountNumber").value.trim();
+            const bankName = document.getElementById("bankName").value.trim();
+            const amount = parseFloat(document.getElementById("bankAmount").value);
+            const pin = document.getElementById("bankPin").value.trim();
+            // Get the status message element specific to this form
+            const statusMsg = document.getElementById("bankWithdrawalStatus");
+
+            if (!accNum || !bankName || isNaN(amount) || amount <= 0 || !pin) {
+                if (statusMsg) {
+                    statusMsg.textContent = "Please fill all fields correctly.";
+                    statusMsg.style.color = "red";
+                }
+                return;
+            }
+            // Clear previous message
+            if (statusMsg) {
+                statusMsg.textContent = '';
+            }
+            proceedWithdrawal({ method: "Bank", accNum: accNum, bankName: bankName, amount: amount, pin: pin });
+        }
+
+        function submitWalletWithdrawal() {
+            const walletName = document.getElementById("walletName").value.trim();
+            const walletAddress = document.getElementById("walletAddress").value.trim(); // Get wallet address
+            const amount = parseFloat(document.getElementById("walletAmount").value);
+            const pin = document.getElementById("walletPin").value.trim();
+            // Get the status message element specific to this form
+            const statusMsg = document.getElementById("walletWithdrawalStatus");
+
+            // Added validation for wallet address
+            if (!walletName || !walletAddress || isNaN(amount) || amount <= 0 || !pin) {
+                if (statusMsg) {
+                    statusMsg.textContent = "Please fill all fields correctly.";
+                    statusMsg.style.color = "red";
+                }
+                return;
+            }
+            // Clear previous message
+            if (statusMsg) {
+                statusMsg.textContent = '';
+            }
+            proceedWithdrawal({ method: "Wallet", walletName: walletName, walletAddress: walletAddress, amount: amount, pin: pin }); // Pass walletAddress
+        }
+
+        function proceedWithdrawal(details) {
+            // details: object with method, amount, and other info
+            const amount = details.amount;
+            // We will show the pending status in a separate modal, not here.
+            // const statusMsg = document.getElementById("withdrawalStatus"); // This element doesn't exist in the forms anymore.
+
+            // Create withdrawal request object
+            const requestData = {
+                userId: currentUserUid,
+                userName: document.getElementById("userName").textContent,
+                method: details.method,
+                amount: amount,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                status: "pending",
+            };
+            if (details.method === "Bank") {
+                requestData.accountNumber = details.accNum;
+                requestData.bankName = details.bankName;
+                // PIN should ideally be handled securely server-side, not stored directly
+                // requestData.pin = details.pin; // Do not store PIN directly if possible
+            } else { // Method is Wallet
+                requestData.walletName = details.walletName;
+                requestData.walletAddress = details.walletAddress; // Store wallet address
+                // PIN should ideally be handled securely server-side
+                // requestData.pin = details.pin; // Do not store PIN directly if possible
+            }
+
+            // Save request
+            firebase
+                .database()
+                .ref("withdrawalRequests")
+                .push(requestData)
+                .then(() => {
+                    // Determine destination for history based on method
+                    const historyDestination = details.method === 'Bank' ? details.accNum : `${details.walletName} (${details.walletAddress})`;
+
+                    // Add to debit history
+                    addDebitHistoryEntry(amount, "Pending Withdrawal", historyDestination, details.method);
+
+                    // Close the withdrawal forms
+                    closeBankForm();
+                    closeWalletForm();
+                    closeMainWithdrawModal(); // Ensure main modal is closed
+
+                    // Open the pending status modal
+                    openPendingStatusModal();
+
+                    // Optionally close the pending status modal after a delay
+                    // setTimeout(closePendingStatusModal, 5000); // Close after 5 seconds
+
+                })
+                .catch((error) => {
+                    console.error("Error submitting withdrawal:", error);
+                    // Display error in the specific form's status area
+                    let statusMsgElement;
+                    if (details.method === "Bank") {
+                        statusMsgElement = document.getElementById("bankWithdrawalStatus");
+                    } else {
+                        statusMsgElement = document.getElementById("walletWithdrawalStatus");
+                    }
+
+                    if (statusMsgElement) {
+                        statusMsgElement.textContent = "Error submitting withdrawal. Please try again.";
+                        statusMsgElement.style.color = "red";
+                    } else {
+                        alert("Error submitting withdrawal. Please try again."); // Fallback alert
+                    }
+
+                });
+        }
+
+        // Updated addDebitHistoryEntry to accept method and use it for display
+        function addDebitHistoryEntry(amount, status, destination, method) {
+            if (!currentUserUid) return;
+            const ref = firebase.database().ref("investors/" + currentUserUid + "/depositHistory");
+            const entry = {
+                amount: amount,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                type: "Withdrawal", // Indicate this is a withdrawal
+                status: status, // e.g., 'Pending Withdrawal', 'Approved', 'Rejected'
+                // Store destination details based on method
+                method: method, // Add the method to the history entry
+                ...(method === 'Bank' && { accountNumber: destination }), // Store acc number if Bank
+                ...(method === 'Wallet' && { walletName: destination.split(' ')[0], walletAddress: destination.substring(destination.indexOf('(') + 1, destination.length - 1) }) // Store wallet name/address if Wallet
+            };
+
+            // Simplified entry for wallet address in history for display
+            let historyEntryDetails = {
+                amount: amount,
+                timestamp: firebase.database.ServerValue.TIMESTAMP,
+                type: "Withdrawal",
+                status: status,
+                method: method,
+            };
+
+            if (method === 'Bank') {
+                historyEntryDetails.accountNumber = destination;
+            } else if (method === 'Wallet') {
+                // Store wallet name and address separately for easier display
+                historyEntryDetails.walletName = destination.substring(0, destination.indexOf('(')).trim();
+                historyEntryDetails.walletAddress = destination.substring(destination.indexOf('(') + 1, destination.length - 1);
+            }
+
+
+            ref.push(historyEntryDetails);
+        }
+
+        // Close modals when clicking outside
+        window.onclick = function (event) {
+            if (event.target == document.getElementById("chatModal")) {
+                closeChatModal();
+            }
+            if (event.target == document.getElementById("mainWithdrawModal")) {
+                closeMainWithdrawModal();
+            }
+            if (event.target == document.getElementById("bankFormModal")) {
+                closeBankForm();
+            }
+            if (event.target == document.getElementById("walletFormModal")) {
+                closeWalletForm();
+            }
+            if (event.target == document.getElementById("pendingStatusModal")) {
+                closePendingStatusModal();
+            }
+        };
+
+        // Ensure modals are hidden on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('chatModal').style.display = 'none';
+            document.getElementById('mainWithdrawModal').style.display = 'none';
+            document.getElementById('bankFormModal').style.display = 'none';
+            document.getElementById('walletFormModal').style.display = 'none';
+            document.getElementById('pendingStatusModal').style.display = 'none';
+        });
+
+
+    </script>
+
+    <!-- existing Chart.js code ... (unchanged) -->
+    <script>
+        const ctx = document.getElementById("signalChart").getContext("2d");
+        new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+                datasets: [
+                    {
+                        label: "Signal Strength",
+                        data: [12, 19, 15, 17, 23, 18, 27],
+                        fill: true,
+                        backgroundColor: "rgba(59, 130, 246, 0.2)",
+                        borderColor: "#3b82f6",
+                        tension: 0.4,
+                    },
+                ],
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, grid: { color: "#e5e7eb" } },
+                    x: { grid: { color: "#f3f4f6" } },
+                },
+            },
+        });
+    </script>
+
+</body>
+
+</html>

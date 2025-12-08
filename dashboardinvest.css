@@ -1,0 +1,241 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background: linear-gradient(to right, #f0f4f8, #ffffff);
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+}
+
+.fade-in {
+    animation: fadeInUp 0.7s ease forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Modal Styles */
+.modal {
+    display: none;
+    /* Hidden by default */
+    position: fixed;
+    /* Stay in place */
+    z-index: 1000;
+    /* Increased z-index to be above other elements */
+    left: 0;
+    top: 0;
+    width: 100%;
+    /* Full width */
+    height: 100%;
+    /* Full height */
+    overflow: auto;
+    /* Enable scroll if needed */
+    background-color: rgba(0, 0, 0, 0.4);
+    /* Black w/ opacity */
+    justify-content: center;
+    align-items: center;
+    display: flex;
+    /* Use flexbox for centering */
+}
+
+.modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    /* Auto margin for centering with flexbox */
+    padding: 20px;
+    border: 1px solid #888;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+    /* Limit modal height */
+    position: relative;
+    /* Needed for absolute positioning of close button */
+}
+
+.close {
+    color: #aaa;
+    position: absolute;
+    /* Position close button */
+    top: 10px;
+    right: 10px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+    color: black;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.btn {
+    display: inline-block;
+    font-weight: 400;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: middle;
+    user-select: none;
+    border: 1px solid transparent;
+    padding: .375rem .75rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    border-radius: .25rem;
+    cursor: pointer;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #3b82f6;
+    /* Using Tailwind blue-500 */
+    border-color: #3b82f6;
+    transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+    background-color: #2563eb;
+    /* Tailwind blue-600 */
+}
+
+
+/* Chat Modal Specific Styles */
+#userChatMessages {
+    flex-grow: 1;
+    /* Allows message area to take available space */
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+    overflow-y: auto;
+    /* Add scroll for messages */
+    max-height: 400px;
+    /* Limit height of message area */
+    display: flex;
+    flex-direction: column;
+    /* Stack messages vertically */
+}
+
+.message {
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    max-width: 80%;
+    word-wrap: break-word;
+}
+
+.message.user {
+    align-self: flex-end;
+    /* Align user messages to the right */
+    background-color: #e2f0cb;
+    /* Light green for user */
+    color: #333;
+}
+
+.message.admin {
+    align-self: flex-start;
+    /* Align admin messages to the left */
+    background-color: #f1f0f0;
+    /* Light grey for admin */
+    color: #333;
+}
+
+.message-sender {
+    font-size: 0.8em;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.message-text {
+    margin: 0;
+}
+
+.message-input-area {
+    display: flex;
+    gap: 10px;
+}
+
+#userChatInput {
+    flex-grow: 1;
+}
+
+/* Logout Button/Icon */
+.logout-icon {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    font-size: 1.8rem;
+    color: #e74c3c;
+    cursor: pointer;
+    z-index: 10;
+    transition: color 0.3s ease;
+}
+
+.logout-icon:hover {
+    color: #c0392b;
+}
+
+/* Chat Button/Icon */
+.chat-icon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    font-size: 2rem;
+    color: #3b82f6;
+    background-color: #ffffff;
+    border-radius: 50%;
+    padding: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    z-index: 10;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.chat-icon:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Added style for the pending status box */
+.pending-status-box {
+    background-color: #fff3cd;
+    /* Light yellow */
+    color: #856404;
+    /* Dark yellow */
+    border: 1px solid #ffeeba;
+    /* Lighter yellow border */
+    padding: 10px;
+    margin-top: 15px;
+    border-radius: 5px;
+    text-align: center;
+    display: none;
+    /* Hidden by default */
+}

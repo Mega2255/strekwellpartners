@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="admin.css" />
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+</head>
+
+<body>
+    <div class="admin-container">
+        <div class="welcome-card">
+            <h2>Welcome, Admin</h2>
+            <p>Please select a platform to manage:</p>
+            <div class="option-buttons">
+                <button onclick="goTo('banking')">Online Banking</button>
+                <button onclick="goTo('investment')">Investment</button>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+             apiKey: "AIzaSyDnkCQOgU1FGZL3rjck9YI7wxdltHxI_L0",
+  authDomain: "strekwell.firebaseapp.com",
+  projectId: "strekwell",
+        };
+        firebase.initializeApp(firebaseConfig);
+
+        firebase.auth().onAuthStateChanged(user => {
+            if (!user) {
+                window.location.href = "adminlogin.html";
+            }
+        });
+
+        function logout() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "adminlogin.html";
+            });
+        }
+
+        function goTo(type) {
+            if (type === "banking") {
+                window.location.href = "admin-banking.html";
+            } else if (type === "investment") {
+                window.location.href = "admin-investment.html";
+            }
+        }
+    </script>
+</body>
+
+</html>

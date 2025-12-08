@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>More Options</title>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="options.css" />
+
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <!-- Include Realtime Database SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+
+    <!-- Bootstrap JS (Should be loaded before your custom script that uses it) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Chat Styling (Keep this in the head or a separate CSS file) -->
+    <style>
+        #chatBox .message {
+            background: #e1f5fe;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            max-width: 80%;
+            word-wrap: break-word;
+            align-self: flex-start;
+            /* Default to user message */
+        }
+
+        #chatBox .admin {
+            background: #c8e6c9;
+            align-self: flex-end;
+            /* Admin messages align to the right */
+        }
+
+        /* Responsive adjustments for the modal */
+        @media (max-width: 576px) {
+            #chatModal .modal-dialog {
+                max-width: 95%;
+                /* Make modal wider on small screens */
+                margin: 10px auto;
+                /* Center and add some margin */
+            }
+
+            #chatBox {
+                max-height: 250px;
+                /* Adjust max height on small screens */
+            }
+        }
+    </style>
+
+</head>
+
+<body>
+    <div class="container">
+        <h1>Choose an Option</h1>
+        <div class="grid">
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #0d6efd, #0e76a8);">
+                <div class="icon-wrapper"><i class="fas fa-home"></i></div>
+                <span>Home</span>
+            </a>
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #28a745, #218838);">
+                <div class="icon-wrapper"><i class="fas fa-chart-line"></i></div>
+                <span>Activity</span>
+            </a>
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #17a2b8, #0c5460);">
+                <div class="icon-wrapper"><i class="fas fa-credit-card"></i></div>
+                <span>Cards</span>
+            </a>
+
+            <a href="transfer.html" class="card" style="background: linear-gradient(135deg, #fd7e14, #e26a00);">
+                <div class="icon-wrapper"><i class="fas fa-exchange-alt"></i></div>
+                <span>Transfer</span>
+            </a>
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #6610f2, #520dc2);">
+                <div class="icon-wrapper"><i class="fas fa-globe"></i></div>
+                <span>Int'l Wire</span>
+            </a>
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #dc3545, #c82333);">
+                <div class="icon-wrapper"><i class="fas fa-download"></i></div>
+                <span>Deposit</span>
+            </a>
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #ffc107, #e0a800);">
+                <div class="icon-wrapper"><i class="fas fa-hand-holding-usd"></i></div>
+                <span>Loan</span>
+            </a>
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #fd7e14, #e26a00);">
+                <div class="icon-wrapper"><i class="fas fa-money-check-alt"></i></div>
+                <span>IRS Refund</span>
+            </a>
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #6f42c1, #5a32a3);">
+                <div class="icon-wrapper"><i class="fas fa-cog"></i></div>
+                <span>Settings</span>
+            </a>
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #00bcd4, #007b8a);" id="supportBtn">
+                <div class="icon-wrapper"><i class="fas fa-headset"></i></div>
+                <span>Support</span>
+            </a>
+
+            <a href="#" class="card" style="background: linear-gradient(135deg, #dc3545, #c82333);" id="logoutBtn">
+                <div class="icon-wrapper"><i class="fas fa-sign-out-alt"></i></div>
+                <span>Logout</span>
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Logout Modal -->
+    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">Are you sure you want to log out?</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <a href="login.html" class="btn btn-primary">Yes</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Support Chat Modal -->
+    <div class="modal fade" id="chatModal" tabindex="-1" aria-labelledby="chatModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 400px;">
+            <div class="modal-content" style="border-radius: 15px;">
+                <div class="modal-header bg-info text-white" style="border-radius: 15px 15px 0 0;">
+                    <h5 class="modal-title" id="chatModalLabel"><i class="fas fa-comments"></i> Live Support</h5>
+                    <!-- ADDED: Standard Bootstrap close button -->
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="chatBox"
+                    style="max-height: 300px; overflow-y: auto; display: flex; flex-direction: column;">
+                    <!-- Messages will load here -->
+                    <p style="text-align: center; color: #888;">Loading chat...</p>
+                </div>
+                <div class="modal-footer d-flex" style="gap: 10px;">
+                    <input type="text" id="chatInput" class="form-control" placeholder="Type your message..." />
+                    <button class="btn btn-primary" onclick="sendMessage()"><i class="fas fa-paper-plane"></i></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Your Firebase + Chat Script (Moved to the end of the body) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', (event) => {
+         const firebaseConfig = {
+        apiKey: "AIzaSyDnkCQOgU1FGZL3rjck9YI7wxdltHxI_L0",
+        authDomain: "strekwell.firebaseapp.com",
+        projectId: "strekwell",
+        storageBucket: "strekwell.firebasestorage.app",
+        messagingSenderId: "413018374090",
+        appId: "1:413018374090:web:c3fa0e5577a20ac04ed933"
+    };
+
+    // Initialize Firebase (compat version)
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+            const auth = firebase.auth();
+            const database = firebase.database(); // Initialize Realtime Database
+
+            // Bootstrap modal instances - Simplified initialization
+            const logoutModal = new bootstrap.Modal(document.getElementById('logoutModal'));
+            const chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
+
+            // Logout modal logic
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                logoutModal.show();
+            });
+
+            // Chat modal logic
+            document.getElementById("supportBtn").addEventListener("click", () => {
+                chatModal.show();
+            });
+
+            // Send message
+            // Made sendMessage globally accessible for onclick
+            window.sendMessage = function () {
+                const msg = document.getElementById("chatInput").value.trim();
+                if (!msg) return;
+                const user = auth.currentUser;
+                if (!user) {
+                    alert("You must be logged in.");
+                    // Optionally redirect to login
+                    // window.location.href = "login.html";
+                    return;
+                }
+
+                // Push a new message object to the user's chat node in the Realtime Database
+                database.ref("supportChats/" + user.uid).push({
+                    message: msg,
+                    sender: "user", // Mark message as sent by user
+                    timestamp: firebase.database.ServerValue.TIMESTAMP // Use server timestamp
+                }).then(() => {
+                    // Clear input after sending
+                    document.getElementById("chatInput").value = "";
+                }).catch(error => {
+                    console.error("Error sending message:", error);
+                    alert("Failed to send message.");
+                });
+            }
+
+            // Load messages
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    const chatBox = document.getElementById("chatBox");
+                    // Listen to messages for the current user's UID
+                    // Order by timestamp to display messages chronologically
+                    database.ref("supportChats/" + user.uid)
+                        .orderByChild("timestamp")
+                        .on("value", snapshot => {
+                            chatBox.innerHTML = ""; // Clear existing messages
+                            if (!snapshot.exists()) {
+                                chatBox.innerHTML = "<p style='text-align: center; color: #888;'>Start a conversation!</p>";
+                                return;
+                            }
+                            snapshot.forEach(childSnapshot => {
+                                const data = childSnapshot.val();
+                                const msgEl = document.createElement("div");
+                                // Add 'admin' class if the sender is 'admin'
+                                msgEl.className = "message" + (data.sender === "admin" ? " admin" : "");
+                                msgEl.textContent = data.message;
+                                chatBox.appendChild(msgEl);
+                            });
+                            // Scroll to the bottom of the chat box
+                            chatBox.scrollTop = chatBox.scrollHeight;
+                        }, errorObject => {
+                            console.error("Error loading messages:", errorObject.code);
+                            chatBox.innerHTML = "<p style='text-align: center; color: red;'>Error loading chat.</p>";
+                        });
+                } else {
+                    // User is logged out, handle accordingly (e.g., clear chat or redirect)
+                    document.getElementById("chatBox").innerHTML = "<p style='text-align: center; color: #888;'>Please log in to view chat.</p>";
+                }
+            });
+
+            // Logout function (already present but updated to use Bootstrap modal)
+            window.logout = function () { // Made logout globally accessible for the logout button
+                auth.signOut().then(() => {
+                    // Sign-out successful.
+                    window.location.href = "login.html";
+                }).catch((error) => {
+                    // An error happened.
+                    console.error("Logout failed:", error);
+                    alert("Logout failed. Please try again.");
+                });
+            }
+
+
+            // Ensure user is logged in when the page loads
+            auth.onAuthStateChanged((user) => {
+                if (!user) {
+                    // No user is signed in.
+                    window.location.href = "login.html";
+                }
+                // If user is signed in, the chat listener is already active
+            });
+        }); // End of DOMContentLoaded listener
+    </script>
+</body>
+
+</html>

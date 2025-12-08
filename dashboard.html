@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strekwell Partner Bank User Dashboard</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+
+    <style>
+        /* Ensure preloader is full screen */
+        #preloader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #fff;
+            /* Or your preferred background */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #007bff;
+            /* Or your brand color */
+            animation: spin 1s ease infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        #text-container {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        /* Basic styling for transaction items */
+        .transaction-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .transaction-item .details {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        .transaction-item .details strong {
+            display: block;
+            font-size: 0.95em;
+        }
+
+        .transaction-item .details small {
+            color: #666;
+            font-size: 0.8em;
+        }
+
+        .transaction-item .amount {
+            font-weight: bold;
+        }
+
+        .transaction-item.credit .amount {
+            color: green;
+        }
+
+        .transaction-item.debit .amount {
+            color: red;
+        }
+    </style>
+
+
+</head>
+
+<body>
+    <!-- Preloader -->
+    <div id="preloader">
+        <div class="spinner"></div>
+        <div id="text-container"></div>
+    </div>
+
+    <div class="dashboard" style="display: none;">
+        <div class="balance-section position-relative">
+            <i class="bi bi-eye-slash-fill eye-toggle" id="toggleBalance"></i>
+            <h4 id="userGreeting">Hi, User</h4>
+            <h6>Available Balance</h6>
+            <h2 id="balanceAmount">$0.00 USD</h2>
+            <div class="position-absolute top-0 end-0 p-3 d-flex gap-3 align-items-center">
+                <i class="bi bi-bell-fill text-white fs-5" title="Notifications"></i>
+                <i class="bi bi-box-arrow-right text-white fs-5" style="cursor: pointer;" id="signOutBtn"
+                    title="Sign Out"></i>
+            </div>
+
+
+            <div class="account-info mt-4">
+                <div>
+                    <small>Account No.</small>
+                    <h6 id="accountNumber">Loading...</h6>
+                </div>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-outline-light btn-sm">
+                        <span class="green-dot"></span>Active
+                    </button>
+                    <button class="btn btn-outline-light btn-sm">
+                        <i class="bi bi-plus-circle"></i> Top up
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="mb-4">What would you like to do today?</h5>
+
+        <div class="row action-buttons">
+            <div class="col-6">
+                <a href="account-info.html" style="text-decoration: none;">
+                    <div class="action-card account-info-card">
+                        <div class="icon-circle">
+                            <i class="bi bi-person-badge"></i>
+                        </div>
+                        <h6>Account Info</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6">
+                <a href="transfer.html" style="text-decoration: none;">
+                    <div class="action-card send-money-card">
+                        <div class="icon-circle">
+                            <i class="bi bi-send-fill"></i>
+                        </div>
+                        <h6>Send Money</h6>
+                    </div>
+                </a>
+            </div>
+            <div class="col-6">
+                <div class="action-card deposit-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-arrow-down-circle"></i>
+                    </div>
+                    <h6>Deposit</h6>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="action-card history-card">
+                    <div class="icon-circle">
+                        <i class="bi bi-clock-history"></i>
+                    </div>
+                    <h6>History</h6>
+                </div>
+            </div>
+        </div>
+
+        <div class="cards-section">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h5><i class="bi bi-credit-card-fill me-2"></i>Your Cards</h5>
+                <a href="#" id="toggleLink" class="text-decoration-none text-primary">View all</a>
+            </div>
+
+            <div class="card-item" id="cardItem" style="display: none;">
+                <img src="STONEWELL VISA CARD.png" alt="Card Image" style="width: 100%; height: auto;">
+            </div>
+        </div>
+
+        <a href="options.html" style="text-decoration: none;">
+            <div class="more-options">
+                <i class="bi bi-three-dots"></i>
+                <p>More Options</p>
+            </div>
+        </a>
+
+        <div class="recent-transactions" id="transactionList">
+            <h5 class="mb-3">Recent Transactions</h5>
+
+            <!-- Transaction items will be loaded here dynamically -->
+
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyDnkCQOgU1FGZL3rjck9YI7wxdltHxI_L0",
+        authDomain: "strekwell.firebaseapp.com",
+        projectId: "strekwell",
+        storageBucket: "strekwell.firebasestorage.app",
+        messagingSenderId: "413018374090",
+        appId: "1:413018374090:web:c3fa0e5577a20ac04ed933"
+    };
+
+    // Initialize Firebase (compat version)
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+        // Function to load user data and transactions
+        async function loadUserDataAndTransactions(user) {
+            const uid = user.uid;
+            const snapshot = await firebase.database().ref("users/" + uid).once("value");
+            const data = snapshot.val();
+
+            if (data) {
+                const name = data.fullname || "User";
+                const balance = parseFloat(data.credit); // Use the 'credit' field
+                const accountNum = data.accountNumber || "N/A";
+
+                document.getElementById("userGreeting").textContent = `Hi, ${name}`;
+                const balanceAmount = (!isNaN(balance) && balance >= 0) ? balance.toFixed(2) : "0.00";
+                document.getElementById("balanceAmount").textContent = `$${balanceAmount} USD`;
+                document.getElementById("accountNumber").textContent = accountNum;
+
+                // Load and display recent transactions
+                loadRecentTransactions(uid);
+
+                // Hide preloader and show dashboard
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('preloader').style.display = 'none';
+                    document.querySelector('.dashboard').style.display = 'block';
+                }, 500); // Match this duration with the preloader transition
+
+            } else {
+                // If user data not found, still hide preloader and redirect
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('preloader').style.display = 'none';
+                    window.location.href = "login.html";
+                }, 500);
+            }
+        }
+
+        function loadRecentTransactions(userId) {
+            const transactionList = document.getElementById("transactionList");
+            const transactionsRef = firebase.database().ref("users/" + userId + "/transactions");
+
+            // Listen for changes in transactions and load the last 10
+            transactionsRef.limitToLast(10).on("value", (snapshot) => {
+                // Clear existing dynamic transactions
+                const dynamicItems = transactionList.querySelectorAll(".transaction-item.dynamic");
+                dynamicItems.forEach(item => item.remove());
+
+                const transactions = [];
+                snapshot.forEach((childSnapshot) => {
+                    transactions.push({ key: childSnapshot.key, ...childSnapshot.val() });
+                });
+
+                // Sort transactions by timestamp in descending order (most recent first)
+                transactions.sort((a, b) => b.timestamp - a.timestamp);
+
+                // Add transactions to the list
+                if (transactions.length > 0) {
+                    transactions.forEach(transaction => {
+                        const item = document.createElement("div");
+                        item.className = `transaction-item ${transaction.type || 'unknown'} dynamic`; // Add 'dynamic' class
+                        const date = transaction.timestamp ? new Date(transaction.timestamp) : new Date();
+                        const formattedTime = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const formattedDate = date.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+
+                        const description = transaction.description || "Transaction";
+                        const typeDisplay = transaction.type ? transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) : "Unknown";
+                        const amountDisplay = parseFloat(transaction.amount).toFixed(2);
+                        const amountSign = transaction.type === 'credit' ? '+' : (transaction.type === 'debit' ? '-' : '');
+
+                        item.innerHTML = `
+                            <div class="details">
+                                <strong>${description}</strong>
+                                <small>${typeDisplay} | ${formattedTime} | ${formattedDate}</small>
+                            </div>
+                            <div class="amount">${amountSign} $${amountDisplay}</div>
+                        `;
+                        // Insert after the heading
+                        const heading = transactionList.querySelector("h5");
+                        transactionList.insertBefore(item, heading.nextSibling);
+                    });
+                } else {
+                    // Display a message if no transactions are found
+                    const noTransactionsMessage = document.createElement("div");
+                    noTransactionsMessage.className = "transaction-item dynamic";
+                    noTransactionsMessage.innerHTML = `
+                         <div class="details">
+                             <strong>No recent transactions.</strong>
+                         </div>
+                         <div class="amount"></div>
+                     `;
+                    const heading = transactionList.querySelector("h5");
+                    transactionList.insertBefore(noTransactionsMessage, heading.nextSibling);
+                }
+            });
+        }
+
+        // Firebase Authentication State Listener
+        firebase.auth().onAuthStateChanged(function (user) {
+            if (user) {
+                // User is signed in. Load data.
+                loadUserDataAndTransactions(user);
+            } else {
+                // User is signed out. Redirect to login.
+                document.getElementById('preloader').style.opacity = '0';
+                setTimeout(() => {
+                    document.getElementById('preloader').style.display = 'none';
+                    window.location.href = "login.html";
+                }, 500);
+            }
+        });
+
+        // ... (rest of your existing user dashboard scripts below) ...
+
+    </script>
+
+    <!-- Preloader typing animation -->
+    <script>
+        const text = "Stonewall Partner Bank";
+        const textContainer = document.getElementById('text-container');
+        let index = 0;
+        let preloaderFinishedTyping = false;
+
+        function typeWriter() {
+            if (index < text.length) {
+                textContainer.textContent += text.charAt(index);
+                index++;
+                setTimeout(typeWriter, 100);
+            } else {
+                preloaderFinishedTyping = true;
+                // If user data is already loaded, hide preloader now
+                if (document.querySelector('.dashboard').style.display === 'block') {
+                    document.getElementById('preloader').style.opacity = '0';
+                    setTimeout(() => {
+                        document.getElementById('preloader').style.display = 'none';
+                    }, 500);
+                }
+            }
+        }
+
+        // Start the typing animation on window load
+        window.addEventListener('load', typeWriter);
+    </script>
+
+    <!-- Toggle card view -->
+    <script>
+        const toggleLink = document.getElementById('toggleLink');
+        const cardItem = document.getElementById('cardItem');
+
+        toggleLink.addEventListener('click', function (e) {
+            e.preventDefault();
+            if (cardItem.style.display === 'none') {
+                cardItem.style.display = 'block';
+                toggleLink.textContent = 'View less';
+            } else {
+                cardItem.style.display = 'none';
+                toggleLink.textContent = 'View all';
+            }
+        });
+    </script>
+
+    <!-- Sign Out -->
+    <script>
+        document.getElementById("signOutBtn").addEventListener("click", function () {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "login.html";
+            }).catch((error) => {
+                console.error("Sign-out error:", error);
+            });
+        });
+    </script>
+
+    <!-- Toggle Balance Visibility (Optional, based on your CSS and logic) -->
+    <script>
+        const toggleBalanceIcon = document.getElementById('toggleBalance');
+        const balanceAmountElement = document.getElementById('balanceAmount');
+        let balanceVisible = true; // Assume balance is visible by default
+
+        toggleBalanceIcon.addEventListener('click', function () {
+            if (balanceVisible) {
+                balanceAmountElement.textContent = '**** USD'; // Mask the balance
+                toggleBalanceIcon.classList.remove('bi-eye-slash-fill');
+                toggleBalanceIcon.classList.add('bi-eye-fill');
+                balanceVisible = false;
+            } else {
+                // To show the actual balance again, you'd need to re-fetch or store it.
+                // For simplicity here, we'll just toggle back the icon.
+                // A more robust solution would store the fetched balance.
+                // For now, we'll rely on the next data load to show the actual amount.
+                const uid = firebase.auth().currentUser ? firebase.auth().currentUser.uid : null;
+                if (uid) {
+                    firebase.database().ref("users/" + uid).once("value").then(snapshot => {
+                        const data = snapshot.val();
+                        if (data) {
+                            const balance = parseFloat(data.credit);
+                            const balanceAmount = (!isNaN(balance) && balance >= 0) ? balance.toFixed(2) : "0.00";
+                            balanceAmountElement.textContent = `$${balanceAmount} USD`;
+                        }
+                    }).catch(error => {
+                        console.error("Error fetching balance:", error);
+                        balanceAmountElement.textContent = '$0.00 USD'; // Fallback
+                    });
+                } else {
+                    balanceAmountElement.textContent = '$0.00 USD'; // Fallback
+                }
+
+                toggleBalanceIcon.classList.remove('bi-eye-fill');
+                toggleBalanceIcon.classList.add('bi-eye-slash-fill');
+                balanceVisible = true;
+            }
+        });
+
+        // Initial state check for balance visibility (if you have a saved preference)
+        // For this example, we assume it starts visible.
+    </script>
+
+
+</body>
+
+</html>

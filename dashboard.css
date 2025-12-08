@@ -1,0 +1,301 @@
+body {
+    background: #f5f7fa;
+    font-family: 'Poppins', sans-serif;
+    overflow-x: hidden;
+}
+
+/* Preloader Styles */
+#preloader {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f3f4f6;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner {
+    width: 64px;
+    height: 64px;
+    border: 8px solid rgba(125, 211, 252, 0.25);
+    border-radius: 50%;
+    border-top-color: #7dd3fc;
+    animation: spin 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+#text-container {
+    margin-top: 24px;
+    color: #4b5563;
+    font-size: 1.5rem;
+    font-weight: 500;
+    opacity: 1;
+}
+
+.dashboard {
+    max-width: 1100px;
+    margin: 40px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.balance-section {
+    background: linear-gradient(135deg, #2512f3, #0b19d8);
+    padding: 30px;
+    border-radius: 20px;
+    color: white;
+    margin-bottom: 30px;
+    position: relative;
+    animation: slideIn 1s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.balance-section i.bi-bell-fill {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 28px;
+    opacity: 0.8;
+}
+
+.account-info {
+    background: #3907da;
+    border-radius: 15px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 20px;
+    flex-wrap: wrap;
+}
+
+.account-info small,
+.account-info h6 {
+    color: #ffffff;
+}
+
+.action-buttons .col-6 {
+    margin-bottom: 20px;
+    animation: zoomIn 0.8s ease;
+}
+
+@keyframes zoomIn {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.action-card {
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    color: #000;
+    height: 100%;
+}
+
+.action-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.icon-circle {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+}
+
+.account-info-card {
+    background: #ffffff;
+}
+
+.account-info-card .icon-circle {
+    background: #f0f0f0;
+}
+
+.send-money-card {
+    background: #007bff;
+    color: #fff;
+}
+
+.send-money-card .icon-circle {
+    background: #80bdff;
+}
+
+.deposit-card {
+    background: #28a745;
+    color: #fff;
+}
+
+.deposit-card .icon-circle {
+    background: #71d88b;
+}
+
+.history-card {
+    background: #f06292;
+    color: #fff;
+}
+
+.history-card .icon-circle {
+    background: #f8a5c2;
+}
+
+.cards-section {
+    margin-top: 40px;
+}
+
+.card-item {
+    background: #ffffff;
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+    margin-top: 15px;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 1.5s ease;
+}
+
+.card-item img {
+    width: 100%;
+    border-radius: 15px;
+    margin-top: 10px;
+}
+
+.pending {
+    font-size: 14px;
+    color: orange;
+    margin-bottom: 5px;
+}
+
+.more-options {
+    margin-top: 40px;
+    text-align: center;
+    animation: fadeIn 2s ease;
+}
+
+.more-options i {
+    font-size: 36px;
+    color: #4facfe;
+    margin-bottom: 10px;
+}
+
+.more-options p {
+    margin-top: 5px;
+    color: #777;
+}
+
+.green-dot {
+    height: 10px;
+    width: 10px;
+    background-color: #28a745;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 5px;
+}
+
+.eye-toggle {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.recent-transactions {
+    margin-top: 40px;
+}
+
+.transaction-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #ffffff;
+    padding: 15px 20px;
+    margin-bottom: 15px;
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    animation: fadeSlide 1s ease;
+}
+
+@keyframes fadeSlide {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.transaction-item .details {
+    display: flex;
+    flex-direction: column;
+}
+
+.transaction-item .amount {
+    font-weight: 600;
+}
+
+.transaction-item.debit .amount {
+    color: red;
+}
+
+.transaction-item.credit .amount {
+    color: green;
+}

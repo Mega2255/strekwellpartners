@@ -1,0 +1,126 @@
+body,
+html {
+    height: 100%;
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: #3b82f6;
+    /* Blue background */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.container-login {
+    background: #e8f0f7;
+    border-radius: 20px;
+    width: 100%;
+    max-width: 370px;
+    padding: 30px 25px;
+    box-shadow: 10px 10px 30px #2563eb, -10px -10px 30px #ffffff;
+    position: relative;
+}
+
+.form-control {
+    border: none;
+    border-radius: 15px;
+    padding-left: 40px;
+    background: #e8f0f7;
+    box-shadow: inset 8px 8px 15px #c6ced6, inset -8px -8px 15px #ffffff;
+    height: 45px;
+    position: relative;
+}
+
+.form-control::placeholder {
+    color: #999;
+    font-size: 14px;
+}
+
+.input-icon {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.form-group {
+    position: relative;
+    margin-bottom: 25px;
+}
+
+.btn-login {
+    width: 100%;
+    height: 45px;
+    border: none;
+    border-radius: 25px;
+    background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    /* Blue gradient */
+    color: white;
+    font-weight: bold;
+    box-shadow: 0px 8px 15px rgba(59, 130, 246, 0.4);
+    transition: all 0.3s ease;
+}
+
+.btn-login:hover {
+    transform: translateY(-3px);
+    box-shadow: 0px 12px 20px rgba(59, 130, 246, 0.6);
+}
+
+.toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    cursor: pointer;
+}
+
+.bottom-links {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #888;
+}
+
+.bottom-links a {
+    color: #3b82f6;
+    text-decoration: none;
+    margin-left: 5px;
+}
+
+.back-arrow {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    font-size: 18px;
+    color: #888;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.bottom-icons {
+    margin-top: 30px;
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    font-size: 22px;
+    color: #888;
+}
+
+.logo {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.logo img {
+    width: 80px;
+    height: 80px;
+    object-fit: contain;
+}
+
+@media (max-width: 480px) {
+    .container-login {
+        padding: 25px 20px;
+    }
+}

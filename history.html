@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transaction History</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <link rel="stylesheet" href="history.css">
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h2><i class="fas fa-history"></i> Transaction History</h2>
+            <input type="text" id="searchInput" placeholder="Search by name, amount, or date...">
+            <div class="sort-options">
+                <label for="sortSelect">Sort by:</label>
+                <select id="sortSelect">
+                    <option value="date">Date</option>
+                    <option value="amount">Amount</option>
+                    <option value="name">Name</option>
+                </select>
+            </div>
+        </div>
+        <div class="transaction-list" id="transactionList">
+            <!-- Transactions will be dynamically inserted here -->
+        </div>
+    </div>
+
+    <!-- Modal for transaction details -->
+    <div class="modal" id="transactionModal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal()">×</button>
+            <h3>Transaction Details</h3>
+            <p><strong>Type:</strong> <span id="modalType"></span></p>
+            <p><strong>Name:</strong> <span id="modalName"></span></p>
+            <p><strong>Account Number:</strong> <span id="modalAccount"></span></p>
+            <p><strong>Amount:</strong> ₦<span id="modalAmount"></span></p>
+            <p><strong>Status:</strong> <span id="modalStatus"></span></p>
+            <p><strong>Date:</strong> <span id="modalDate"></span></p>
+            <p><strong>Description:</strong> <span id="modalDesc"></span></p>
+        </div>
+    </div>
+
+    <script>
+       const firebaseConfig = {
+  apiKey: "AIzaSyDnkCQOgU1FGZL3rjck9YI7wxdltHxI_L0",
+  authDomain: "strekwell.firebaseapp.com",
+  projectId: "strekwell",
+  storageBucket: "strekwell.firebasestorage.app",
+  messagingSenderId: "413018374090",
+  appId: "1:413018374090:web:c3fa0e5577a20ac04ed933"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+        let currentUserUid = "";
+        let transactions = [];
+
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (!user) return window.location.href = "login.html";
+            currentUserUid = user.uid;
+            loadTransactions();
+        });
+
+        async function loadTransactions() {
+            const snapshot = await firebase.database().ref("transfers").once("value");
+            const data = snapshot.val();
+            transactions = [];
+
+            for (let key in data) {
+                const tx = data[key];
+                if (tx.from === currentUserUid || tx.to === currentUserUid) {
+                    transactions.push({ id: key, ...tx });
+                }
+            }
+
+            displayTransactions(transactions);
+        }
+
+        function displayTransactions(txList) {
+            const list = document.getElementById("transactionList");
+            list.innerHTML = "";
+
+            txList.forEach(tx => {
+                const isDebit = tx.from === currentUserUid;
+                const type = isDebit ? "Debit" : "Credit";
+                const name = isDebit ? tx.recipientName : tx.senderName;
+                const account = isDebit ? tx.recipientAccountNumber : tx.senderAccountNumber;
+                const amount = parseFloat(tx.amount).toLocaleString();
+                const status = tx.status;
+                const date = new Date(tx.timestamp).toLocaleString();
+
+                const item = document.createElement("div");
+                item.className = "transaction-item";
+                item.innerHTML = `
+          <div class="transaction-type ${type.toLowerCase()}">${type}</div>
+          <div class="transaction-details">
+            <div class="transaction-name">${name}</div>
+            <div class="transaction-date">${date}</div>
+          </div>
+          <div class="transaction-amount">₦${amount}</div>
+          <div class="transaction-status ${status.toLowerCase()}">${status}</div>
+        `;
+
+                item.addEventListener("click", () => showModal({ type, name, account, amount, status, date, description: tx.description }));
+                list.appendChild(item);
+            });
+        }
+
+        function showModal(details) {
+            document.getElementById("modalType").textContent = details.type;
+            document.getElementById("modalName").textContent = details.name;
+            document.getElementById("modalAccount").textContent = details.account;
+            document.getElementById("modalAmount").textContent = details.amount;
+            document.getElementById("modalStatus").textContent = details.status;
+            document.getElementById("modalDate").textContent = details.date;
+            document.getElementById("modalDesc").textContent = details.description || "N/A";
+            document.getElementById("transactionModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("transactionModal").style.display = "none";
+        }
+
+        document.getElementById("searchInput").addEventListener("input", function () {
+            const query = this.value.toLowerCase();
+            const filtered = transactions.filter(tx => {
+                const name = tx.from === currentUserUid ? tx.recipientName : tx.senderName;
+                const date = new Date(tx.timestamp).toLocaleString();
+                return name.toLowerCase().includes(query) || date.toLowerCase().includes(query) || tx.amount.toString().includes(query);
+            });
+            displayTransactions(filtered);
+        });
+
+        document.getElementById("sortSelect").addEventListener("change", function () {
+            const value = this.value;
+            let sorted = [...transactions];
+            if (value === "date") {
+                sorted.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            } else if (value === "amount") {
+                sorted.sort((a, b) => b.amount - a.amount);
+            } else if (value === "name") {
+                sorted.sort((a, b) => {
+                    const nameA = a.from === currentUserUid ? a.recipientName : a.senderName;
+                    const nameB = b.from === currentUserUid ? b.recipientName : b.senderName;
+                    return nameA.localeCompare(nameB);
+                });
+            }
+            displayTransactions(sorted);
+        });
+    </script>
+</body>
+
+</html>

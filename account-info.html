@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Account Info - Online Bank</title>
+  <link rel="stylesheet" href="account.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-storage-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+        apiKey: "AIzaSyDnkCQOgU1FGZL3rjck9YI7wxdltHxI_L0",
+        authDomain: "strekwell.firebaseapp.com",
+        projectId: "strekwell",
+        storageBucket: "strekwell.firebasestorage.app",
+        messagingSenderId: "413018374090",
+        appId: "1:413018374090:web:c3fa0e5577a20ac04ed933"
+    };
+
+    // Initialize Firebase (compat version)
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+</script>
+
+  <style>
+    .account-container {
+      max-width: 400px;
+      margin: 50px auto;
+      background: #f9f9f9;
+      padding: 20px;
+      border-radius: 10px;
+    }
+
+    .account-card {
+      position: relative;
+    }
+
+    .save-btn {
+      background: #3b82f6;
+      color: #fff;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .photo-section {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .photo-circle img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .action-btn {
+      display: inline-block;
+      margin-top: 10px;
+      cursor: pointer;
+      color: #3b82f6;
+    }
+
+    .info-field {
+      margin-bottom: 15px;
+    }
+
+    .info-field label {
+      font-weight: bold;
+    }
+
+    .info-value {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .info-value input {
+      flex: 1;
+      padding: 5px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="account-container">
+    <div class="account-card">
+      <button class="save-btn" onclick="saveChanges()"><i class="fas fa-save"></i> Save Changes</button>
+
+      <div class="photo-section">
+        <div class="photo-circle">
+          <img id="profile-pic" src="https://via.placeholder.com/100" alt="User Photo" />
+        </div>
+        <label for="camera-input" class="action-btn"><i class="fas fa-camera"></i> Retake Photo</label>
+        <input type="file" accept="image/*" capture="user" id="camera-input" hidden onchange="previewImage(event)" />
+
+        <label for="upload-input" class="action-btn"><i class="fas fa-upload"></i> Upload Photo</label>
+        <input type="file" accept="image/*" id="upload-input" hidden onchange="previewImage(event)" />
+      </div>
+
+      <div class="info-field">
+        <label>Full Name</label>
+        <div class="info-value">
+          <input type="text" id="name-input" />
+        </div>
+      </div>
+
+      <div class="info-field">
+        <label>Username</label>
+        <div class="info-value">
+          <input type="text" id="username-input" />
+        </div>
+      </div>
+
+      <div class="info-field">
+        <label>Email</label>
+        <div class="info-value">
+          <input type="email" id="email-input" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentUID = null;
+    let profileImageFile = null;
+
+    firebase.auth().onAuthStateChanged(async user => {
+      if (user) {
+        currentUID = user.uid;
+        const snapshot = await firebase.database().ref('users/' + currentUID).once('value');
+        const data = snapshot.val();
+        document.getElementById('name-input').value = data.fullname || '';
+        document.getElementById('username-input').value = data.username || '';
+        document.getElementById('email-input').value = data.email || user.email;
+        if (data.profilePicURL) {
+          document.getElementById('profile-pic').src = data.profilePicURL;
+        }
+      }
+    });
+
+    function previewImage(event) {
+      const file = event.target.files[0];
+      if (file) {
+        profileImageFile = file;
+        const reader = new FileReader();
+        reader.onload = e => {
+          document.getElementById('profile-pic').src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    async function saveChanges() {
+      const fullname = document.getElementById('name-input').value;
+      const username = document.getElementById('username-input').value;
+      const newEmail = document.getElementById('email-input').value;
+
+      let profilePicURL = null;
+
+      try {
+        const user = firebase.auth().currentUser;
+        if (!user) {
+          alert("User not logged in.");
+          return;
+        }
+
+        // 1. Update Firebase Auth email
+        if (user.email !== newEmail) {
+          await user.updateEmail(newEmail);
+        }
+
+        // 2. Upload new profile picture if needed
+        if (profileImageFile) {
+          const storageRef = firebase.storage().ref('profilePics/' + currentUID + '.jpg');
+          await storageRef.put(profileImageFile);
+          profilePicURL = await storageRef.getDownloadURL();
+        }
+
+        // 3. Update Realtime Database
+        const updates = {
+          fullname,
+          username,
+          email: newEmail
+        };
+        if (profilePicURL) {
+          updates.profilePicURL = profilePicURL;
+        }
+
+        await firebase.database().ref('users/' + currentUID).update(updates);
+        alert("Profile updated successfully!");
+        window.location.reload();
+      } catch (error) {
+        console.error(error);
+        if (error.code === 'auth/requires-recent-login') {
+          alert("Please log in again to change your email.");
+          // Redirect or ask for password again
+        } else {
+          alert("Error: " + error.message);
+        }
+      }
+    }
+  </script>
+</body>
+
+</html>

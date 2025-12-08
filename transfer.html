@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Transfer - STREKWELL Online Bank</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f3f4f6;
+            margin: 0;
+        }
+
+        .bank-container {
+            max-width: 500px;
+            margin: 40px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h2 {
+            margin-bottom: 5px;
+        }
+
+        #balanceDisplay {
+            font-weight: bold;
+            color: green;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .transfer-btn {
+            background-color: #3b82f6;
+            color: white;
+            font-weight: bold;
+            border: none;
+            padding: 12px;
+            width: 100%;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .footer-links {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .footer-links a {
+            margin: 0 10px;
+            color: #555;
+            text-decoration: none;
+        }
+
+        /* Modal Styles */
+        .modal,
+        .pinModal,
+        .pendingModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-buttons button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .modal-buttons button:first-child {
+            background: #10b981;
+            color: white;
+        }
+
+        .modal-buttons button:last-child {
+            background: #ef4444;
+            color: white;
+        }
+
+        #pinInput {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+    </style>
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+</head>
+
+<body>
+
+    <div class="bank-container">
+        <div class="header text-center">
+            <h2><i class="fas fa-university"></i> STREKWELL Online Bank Transfer</h2>
+            <p id="balanceDisplay">Balance: $0.00</p>
+        </div>
+        <form id="transfer-form">
+            <!-- Recipient Account Number -->
+            <div class="form-group">
+                <label for="accountNumber">Recipient Account Number</label>
+                <input type="number" id="accountNumber" class="form-control"
+                    placeholder="Enter recipient account number" required />
+            </div>
+            <!-- Recipient Name -->
+            <div class="form-group">
+                <label for="recipientName">Recipient Name</label>
+                <input type="text" id="recipientName" class="form-control" placeholder="Type recipient's full name"
+                    required />
+            </div>
+            <!-- Bank Name -->
+            <div class="form-group">
+                <label for="bankName">Bank Name</label>
+                <input type="text" id="bankName" class="form-control" placeholder="Enter bank name" required />
+            </div>
+            <!-- Amount -->
+            <div class="form-group">
+                <label for="amount">Amount ($)</label>
+                <input type="number" id="amount" class="form-control" placeholder="Enter amount" required />
+            </div>
+            <!-- Description -->
+            <div class="form-group">
+                <label for="desc">Description (Optional)</label>
+                <input type="text" id="desc" class="form-control" placeholder="Optional" />
+            </div>
+            <!-- Transfer Button -->
+            <button type="button" class="btn btn-primary transfer-btn" onclick="showConfirmation()">Transfer
+                Now</button>
+        </form>
+        <div class="footer-links d-flex justify-content-between mt-3">
+            <a href="#" onclick="loadRecentTransactions(); return false;"><i class="fas fa-history"></i> Recent
+                Transfers</a>
+            <a href="#"><i class="fas fa-phone-alt"></i> Contact Support</a>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="modal d-flex">
+        <div class="modal-content">
+            <p>Proceed with this transfer?</p>
+            <div class="modal-buttons">
+                <button class="btn btn-success" onclick="showPinPrompt()">Yes, Proceed</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN Modal -->
+    <div id="pinModal" class="modal d-flex">
+        <div class="modal-content">
+            <p>Enter your PIN to confirm:</p>
+            <input type="password" id="pinInput" class="form-control" maxlength="6" placeholder="Enter PIN" />
+            <div class="modal-buttons mt-3">
+                <button class="btn btn-success" onclick="proceedTransfer()">Confirm</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Modal -->
+    <div id="pendingModal" class="modal d-flex">
+        <div class="modal-content">
+            <i class="fas fa-check-circle fa-3x" style="color: #10b981;"></i>
+            <h3>Transfer Pending</h3>
+            <p>Your transfer has been submitted and is awaiting admin approval.</p>
+        </div>
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.9.0/firebase-database-compat.js"></script>
+
+    <script>
+        // Firebase configuration
+       const firebaseConfig = {
+        apiKey: "AIzaSyDnkCQOgU1FGZL3rjck9YI7wxdltHxI_L0",
+        authDomain: "strekwell.firebaseapp.com",
+        projectId: "strekwell",
+        storageBucket: "strekwell.firebasestorage.app",
+        messagingSenderId: "413018374090",
+        appId: "1:413018374090:web:c3fa0e5577a20ac04ed933"
+    };
+
+    // Initialize Firebase (compat version)
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+        let currentUserUid = "";
+        let userBalance = 0;
+        let userPIN = "";
+        let userName = "";
+
+        // Load user info on auth state change
+        firebase.auth().onAuthStateChanged(async (user) => {
+            if (!user) {
+                setTimeout(() => { window.location.href = "login.html"; }, 100);
+                return;
+            }
+            currentUserUid = user.uid;
+            try {
+                const snapshot = await firebase.database().ref("users/" + currentUserUid).once("value");
+                const data = snapshot.val();
+                if (data) {
+                    userBalance = parseFloat(data.credit) || 0;
+                    userPIN = data.pin || "";
+                    userName = data.fullname || "";
+                    document.getElementById("balanceDisplay").textContent = "Balance: $" + userBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                    loadRecentTransactions(); // Load transactions initially
+                } else {
+                    alert("User data not found");
+                    window.location.href = "login.html";
+                }
+            } catch (err) {
+                console.error("Error loading user data", err);
+            }
+        });
+
+        function showConfirmation() {
+            const recipientAcc = document.getElementById("accountNumber").value.trim();
+            const recipientName = document.getElementById("recipientName").value.trim();
+            const bankName = document.getElementById("bankName").value.trim();
+            const amount = parseFloat(document.getElementById("amount").value);
+            if (!recipientAcc || !recipientName || !bankName || isNaN(amount) || amount <= 0) {
+                alert("Please fill all fields with valid data.");
+                return;
+            }
+            if (amount > userBalance) {
+                alert("Insufficient balance!");
+                return;
+            }
+            document.getElementById("confirmationModal").style.display = "flex";
+        }
+
+        function closeModal() {
+            document.getElementById("confirmationModal").style.display = "none";
+            document.getElementById("pinModal").style.display = "none";
+            document.getElementById("pendingModal").style.display = "none";
+            document.getElementById("pinInput").value = "";
+        }
+
+        function showPinPrompt() {
+            document.getElementById("confirmationModal").style.display = "none";
+            document.getElementById("pinModal").style.display = "flex";
+            document.getElementById("pinInput").focus();
+        }
+
+        async function proceedTransfer() {
+            const pinEntered = document.getElementById("pinInput").value.trim();
+            if (pinEntered !== userPIN) {
+                alert("Invalid PIN");
+                document.getElementById("pinInput").value = "";
+                document.getElementById("pinInput").focus();
+                return;
+            }
+
+            const recipientAcc = document.getElementById("accountNumber").value.trim();
+            const recipientName = document.getElementById("recipientName").value.trim() || "Unknown User";
+            const bankName = document.getElementById("bankName").value.trim();
+            const amount = parseFloat(document.getElementById("amount").value);
+            const desc = document.getElementById("desc").value.trim();
+
+            if (amount > userBalance) {
+                alert("Insufficient balance!");
+                closeModal();
+                return;
+            }
+
+            try {
+                // 1. Create transfer record in /transfers with status 'pending'
+                const transferRef = firebase.database().ref("transfers").push();
+                const transferId = transferRef.key;
+                const transferData = {
+                    id: transferId,
+                    from: currentUserUid,
+                    to: recipientAcc,
+                    senderName: userName,
+                    senderAccountNumber: recipientAcc,
+                    recipientName: recipientName,
+                    recipientAccountNumber: recipientAcc,
+                    bankName: bankName,
+                    amount: amount,
+                    description: desc,
+                    status: "pending",
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                };
+                await transferRef.set(transferData);
+
+                // 2. Save transaction in sender's transactions with status 'pending'
+                const senderTransRef = firebase.database().ref(`users/${currentUserUid}/transactions`).push();
+                await senderTransRef.set({
+                    id: senderTransRef.key,
+                    from: currentUserUid,
+                    to: recipientAcc,
+                    senderName: userName,
+                    senderAccountNumber: recipientAcc,
+                    recipientName: recipientName,
+                    recipientAccountNumber: recipientAcc,
+                    bankName: bankName,
+                    amount: amount,
+                    description: desc,
+                    status: "pending", // Initially pending
+                    timestamp: firebase.database.ServerValue.TIMESTAMP
+                });
+
+                // 3. Deduct the amount immediately from user's balance locally (optional)
+                // (Alternatively, wait for admin approval to finalize)
+                userBalance -= amount;
+                document.getElementById("balanceDisplay").textContent = "Balance: $" + userBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                // Show pending confirmation modal
+                document.getElementById("pinModal").style.display = "none";
+                document.getElementById("pendingModal").style.display = "flex";
+
+                // Reset form
+                document.getElementById("transfer-form").reset();
+
+                // After 3 seconds, hide modal and notify success
+                setTimeout(() => {
+                    document.getElementById("pendingModal").style.display = "none";
+                    alert("Transfer request submitted successfully and is pending admin approval.");
+                }, 3000);
+
+            } catch (err) {
+                console.error("Transfer error:", err);
+                alert("Error during transfer: " + err.message);
+                closeModal();
+            }
+        }
+
+        async function loadRecentTransactions() {
+            const transactionList = document.getElementById("transactionList");
+            // Clear previous dynamic transactions
+            Array.from(transactionList.querySelectorAll(".transaction-item.dynamic")).forEach(e => e.remove());
+
+            const userTransRef = firebase.database().ref(`users/${currentUserUid}/transactions`);
+            userTransRef.limitToLast(10).on("value", (snapshot) => {
+                const transactions = [];
+                snapshot.forEach((child) => {
+                    const t = child.val();
+                    // Only show successful transactions
+                    if (t.status === "success") {
+                        transactions.push(t);
+                    }
+                });
+                // Sort by timestamp descending
+                transactions.sort((a, b) => b.timestamp - a.timestamp);
+                // Display
+                transactions.forEach(t => {
+                    const item = document.createElement("div");
+                    item.className = "transaction-item dynamic d-flex justify-content-between align-items-center mb-2 p-2 border rounded";
+                    const date = t.timestamp ? new Date(t.timestamp) : new Date();
+                    const timeStr = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    const dateStr = date.toLocaleDateString([], { day: '2-digit', month: 'short', year: 'numeric' });
+                    const amountStr = Number(t.amount).toFixed(2);
+                    const sign = t.type === 'credit' ? '+' : (t.type === 'debit' ? '-' : '');
+                    item.innerHTML = `
+              <div>
+                <strong>${t.description || 'Transaction'}</strong><br/>
+                <small>${t.type || 'Unknown'} | ${timeStr} ${dateStr}</small>
+              </div>
+              <div class="text-end" style="min-width:80px;">
+                ${sign}$${amountStr}
+              </div>
+            `;
+                    transactionList.appendChild(item);
+                });
+            });
+        }
+
+        // Optional: Add global click to close modals
+        window.onclick = function (event) {
+            if (event.target.classList.contains('modal')) {
+                closeModal();
+            }
+        };
+    </script>
+
+</body>
+
+</html>
